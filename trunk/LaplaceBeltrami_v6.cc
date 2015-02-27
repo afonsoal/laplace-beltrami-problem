@@ -80,11 +80,9 @@
 // If one wants to use ILU preconditioner
 #include <deal.II/lac/sparse_ilu.h>
 
-//Added 14/10
 #include <deal.II/numerics/vector_tools.h>
 #include <deal.II/base/convergence_table.h>
 #include <deal.II/numerics/fe_field_function.h>
-// NEW
 #include <deal.II/fe/fe_system.h>
 #include <deal.II/lac/block_matrix_base.h>
 #include <deal.II/lac/compressed_sparsity_pattern.h>
@@ -96,7 +94,6 @@
 #include "/home/afonsoal/Documents/dealii_8_2_1_unzipped/dealii-8.2.1/my_programs/my_includes/NewCell.h"
 #include "/home/afonsoal/Documents/dealii_8_2_1_unzipped/dealii-8.2.1/my_programs/my_includes/NewMesh.h"
 
-// NEW
 #include <deal.II/fe/fe_system.h>
 #include <deal.II/fe/fe_nothing.h>
 
@@ -110,10 +107,6 @@
 namespace cut_cell_method
 {
 using namespace dealii;
-
-//////////////////////////////////////////
-// Apparently the Solution class just needs to be declared as a Function in order to
-// integrate_difference to work.
 
 template <int dim>
 class ExactSolution : public Function<dim>
@@ -137,9 +130,7 @@ void ExactSolution <dim>:: vector_value (const Point<dim>   &p,
 	values(0) = 12*sin(3*atan2(p(1),p(0))) / 12;
 //	values(0) = 12*(3*p(0)*p(0)*p(1)-p(1)*p(1)*p(1)) / 12;
 	values(1) = (1*1-p.square())/4 ;
-//	return_value = 12*sin(3*atan2(p(1),p(0))); // ORIGINAL.
 
-//	return return_value;
 }
 
 template <int dim>
@@ -148,20 +139,12 @@ void ExactSolution<dim>::vector_gradient (const Point<dim>   &p,
 	Tensor<1,dim> return_value;
 
 	// if fs = 108*..., do not divide by 12
-
 	gradient_values[0][0] = (72*p(0)*p(1)) / 12;
-	// minus!!!
 	gradient_values[0][1] = (36*(p(0)*p(0)-p(1)*p(1))) / 12;
 
 	gradient_values[1][0] = (-p(0)/2);
 	gradient_values[1][1] = (-p(1)/2);
 }
-//////////////////////////////////////////
-
-
-//////////////////////////////////////////
-// Apparently the Solution class just needs to be declared as a Function in order to
-// integrate_difference to work.
 template <int dim>
 class ExactSolutionUsurface : public Function<dim>
 {
@@ -180,7 +163,6 @@ double ExactSolutionUsurface <dim>:: value (const Point<dim>   &p,
 		const unsigned int) const	{
 	double return_value = 0;
 
-//	return_value = (1*1-p.square())/4 ;
 //	return_value = 12*sin(3*atan2(p(1),p(0))); // ORIGINAL.
 	return_value = 1*sin(3*atan2(p(1),p(0)));
 	return return_value;
@@ -194,7 +176,6 @@ Tensor<1,dim > ExactSolutionUsurface<dim>::gradient (const Point<dim>   &p,
 	return_value[1] = 36*(p(0)*p(0)-p(1)*p(1))/12;
 	return return_value; // return value = [ , ] (size = ?,dim)
 }
-//////////////////////////////////////////
 template <int dim>
 class ExactSolutionUbulk : public Function<dim>
 {
@@ -218,16 +199,12 @@ double ExactSolutionUbulk <dim>:: value (const Point<dim>   &p,
 }
 
 template <int dim>
-Tensor<1,dim > ExactSolutionUbulk<dim>::gradient (const Point<dim>   &p,
-		const unsigned int) const
-		{
+Tensor<1,dim > ExactSolutionUbulk<dim>::gradient (const Point<dim>   &p, const unsigned int) const {
 	Tensor<1,dim> return_value;
 	return_value[0] = (-p(0)/2);
 	return_value[1] = (-p(1)/2);
-//	return_value = (-p/2);
-	return return_value; // return value = [ , ] (size = ?,dim)
-		}
-//////////////////
+	return return_value;
+}
 // Creation of Function to "weight" the non-solution elements (elements outside the circle)
 template <int dim>
 class WeightSolutionUbulk : public Function<dim>
@@ -244,13 +221,10 @@ void WeightSolutionUbulk<dim>:: vector_value (const Point<dim>   &p,
 		Vector<double>   &values ) const	{
 
 	double return_value = 0;
-	//	if (p.square() <= Radius_boundary)
 	if (p.square() <= 1)
 		return_value = 1;
 	else
 		return_value = 0;
-
-//	return return_value; // return value = [ ] (size = 1)
 
 	values[0] = 0;
 	values[1] = return_value;
@@ -357,8 +331,6 @@ private:
 	int ExtendedGlobal2Local (int,const typename hp::DoFHandler<dim>::cell_iterator &cell);
 	static bool	cell_is_in_bulk_domain (const typename hp::DoFHandler<dim>::cell_iterator &cell);
 	static bool	cell_is_in_surface_domain (const typename hp::DoFHandler<dim>::cell_iterator &cell);
-	void create_levelset_vector (std::vector<Point<2> > & levelset_vector ,
-			const Point<2> point);
 	void create_levelset_vector_map (std::map< double, Point<2> > & _levelset_map ,
 			const Point<2> point);
 
@@ -375,12 +347,6 @@ private:
 	void process_solution_ubulk();
 	void interpolate_solution_usurface();
 
-
-
-
-
-
-
 	int 				 cycle;
 	int 				 n_cycles;
 	Triangulation<2>     triangulation;
@@ -389,25 +355,12 @@ private:
 	FESystem<dim>        fe_inside;
 	FE_Q<dim>            fe_q_inside;
 
-//	FE_Q<2>              fe; // <2> indicates the Dimension // DEPRECATED
 	FE_Q<2>              fe_justForMesh;
 	FE_Q<1,2>				fe_dummy;
 	hp::FECollection<dim> fe_collection_surface;
 	DoFHandler<2>        dof_handler;
 	hp::DoFHandler<2>        dof_handler_new;
 
-
-
-//	SparsityPattern      sparsity_pattern; // DEPRECATED
-//	SparseMatrix<double> system_matrix; // DEPRECATED
-
-//	Vector<double>       solution; // DEPRECATED
-//	Vector<double>       system_rhs; // DEPRECATED
-
-///////////
-//    Triangulation<dim>   triangulation; // DEPRECATED
-
-//    DoFHandler<dim>      dof_handler; // DEPRECATED
     BlockSparsityPattern      	sparsity_pattern;
     BlockSparseMatrix<double> 	system_matrix;
 
@@ -452,15 +405,12 @@ private:
 
     ConstraintMatrix     constraints;
     MappingQ1 <2>	 	 mapping;
-    ///////////
 
 
 	FullMatrix<double>   	ALLERRORS_ubulk;
 	FullMatrix<double>   	ALLERRORS_usurface;
-//	Vector<double>       	exact_solution;
 	Vector<double>       	exact_solution_usurface;
 	Vector<double>       	exact_solution_ubulk;
-//	Vector<double>       	difference_solution;
 
 	Vector<double>       	difference_solution_usurface;
 	Vector<double>       	difference_solution_ubulk;
@@ -470,26 +420,14 @@ private:
 
 	Vector<double>       levelset;
 
-//	SparsityPattern      sparsity_pattern_new; // DEPRECATED
-//	SparseMatrix<double> system_matrix_new; // DEPRECATED
 	SparseMatrix<double> mass_matrix;
-//	FullMatrix<double>   FM_system_matrix; // DEPRECATED
-
-
-//	Vector<double>       solution_new; // DEPRECATED
-//	Vector<double>       system_rhs_new; // DEPRECATED
-
-//	ConstraintMatrix 	 constraints; // DEPRECATED
 
 	std::vector <bool>   isboundary_face;
 	NewMesh 			 Obj_NewMesh;
 	int n_dofs_surface, n_dofs_inside;
 	hp::MappingCollection<dim> mapping_collection_surface;
 	int new_n_cycles;
-	std::vector< Point<2> > levelset_face;
 	std::map < double, Point<2> > levelset_face_map;
-
-
 };
 
 template <int dim>
@@ -500,10 +438,6 @@ fe_surface (FE_Q<dim>(1)      /*u_surface, @ surface*/, 1, FE_Q<dim>(1),/*u_bulk
 fe_inside  (FE_Nothing<dim>() /*u_surface, @ inside */, 1, FE_Q<dim>(1),/*u_bulk, @ inside */ 1),
 
 fe_q_inside (1),
-
-//fe_surface (FE_Q<dim>(1)      /*u_surface, @ surface*/, 1, FE_Q<dim>(1),     /*u_bulk, @ surface*/ 1),
-//fe_inside  (FE_Q<dim>(1)      /*u_bulk,    @ surface*/, 1, FE_Nothing<dim>(),/*u_surface, @ inside */ 1),
-
 
     fe_justForMesh (1),
     fe_dummy (1),
@@ -528,14 +462,10 @@ int PoissonProblem<dim>::ExtendedGlobal2Local(int dof,
 	int active_fe_index = cell->active_fe_index();
 	if (dof<=7)
 		dof_index = dof_handler_new.get_fe()[active_fe_index].system_to_component_index(dof).second;
-	else if (dof == 8)
-		dof_index = 4;
-	else if (dof == 9)
-		dof_index = 4;
-	else if (dof == 10)
-		dof_index = 5;
-	else if (dof == 11)
-		dof_index = 5;
+	else if (dof == 8) 	dof_index = 4;
+	else if (dof == 9)	dof_index = 4;
+	else if (dof == 10)	dof_index = 5;
+	else if (dof == 11)	dof_index = 5;
 	else assert(0);
 
 	assert(active_fe_index == 0);
@@ -543,33 +473,14 @@ int PoissonProblem<dim>::ExtendedGlobal2Local(int dof,
 }
 
 template <int dim>
-void PoissonProblem<dim>::create_levelset_vector( std::vector<Point<2> > & levelset_vector ,
-		const Point<2> point )		{
-	std::vector<Point<2> >::iterator it;
-	it = std::find(levelset_vector.begin(), levelset_vector.end(),
-			point);
-	// Vertex corresponding to levelset_vector was not found; must assign it
-	if (it == levelset_vector.end()){
-		levelset_vector.push_back(point);
-	}
-}
-
-template <int dim>
 void PoissonProblem<dim>::create_levelset_vector_map (std::map< double, Point<2> > & _levelset_map ,
 		const Point<2> point) {
-
+	// Key represents the angle of point (x,y) with respect to the origin
 	double key = atan2(point[1],point[0]);
-//	if (point[1] != 0)
-////		key = atan2(point[0]/point[1]);
-//		key = atan2(point[1],point[0]);
-//	else if (point[0]<0)
-//		key = -10000000;
-//	else if (point[0]>0)
-//		key = 10000000;
-
-//	std::cout << "key: " << key << " point: " << point << std::endl;
-
-	//wasn't found
+	// This map will have the points of the level set function ordered by key, ie, from the smallest
+	// to the biggest angle, such that the points joined will form an ordered circle. The order
+	// is necessary to create the future mesh of the levelset triangulaiton (used for solution
+	// interpolation and error evaluation)
 	if (_levelset_map.count(key) == 0)
 		_levelset_map[key] = point;
 }
@@ -690,24 +601,11 @@ void PoissonProblem<dim>::get_new_triangulation ()
 	Obj_NewMesh.set_variables(support_points,dofs_per_cell);
 	isboundary_face.clear();
 	Point<2> VOID_POINT (-10000,-10000);
-	std::vector< Point<2> > all_points_vector_firstmesh;
 	std::vector<types::global_dof_index> face_dof_indices (2);
 	for (; cell!=endc; ++cell)
 	{
 		fe_values.reinit (cell);
 		cell->get_dof_indices(cell_global_dof_indices);
-
-		// Create output file to visualize all the points of the first mesh in Gnuplot
-/*		for (unsigned int face=0; face<GeometryInfo<2>::faces_per_cell; ++face)
-		{
-			fe_face_values.reinit (cell, face);
-			cell->face(face)->get_dof_indices(face_dof_indices);
-			for (unsigned int i=0;i<2;++i) {
-				unsigned int j = face_dof_indices[i];
-				all_points_vector_firstmesh.push_back(support_points[j]);
-			}
-			all_points_vector_firstmesh.push_back(VOID_POINT);
-		}*/
 
 		isinside = false;
 		isboundary = false;
@@ -783,12 +681,6 @@ void PoissonProblem<dim>::get_new_triangulation ()
 		count_cell++;
 	} // (end for cell)
 
-	std::cout << "CYCLE = " << cycle << "\n";
-//	triangulation_new.~Triangulation();
-//	std::cout << "dof_handler_new.clear() " << "\n";
-
-//	dof_handler_new.clear();
-//	dof_handler_new (triangulation_new);
 	triangulation_new.clear();
 	Obj_NewMesh.create_new_triangulation(triangulation_new);
 	std::string filename_new = "triangulation_new-";
@@ -798,23 +690,6 @@ void PoissonProblem<dim>::get_new_triangulation ()
 	GridOut grid_out;
 	grid_out.write_eps (triangulation_new, out);
 	std::cout << "New Triangulation created: triangulation_new \n";
-
-	std::ofstream all_points_firstmesh;
-	all_points_firstmesh.open("all_points_firstmesh.txt");
-	for(int unsigned j = 0; j <  all_points_vector_firstmesh.size(); ++j) {
-		if (all_points_vector_firstmesh[j] == VOID_POINT) {
-			all_points_firstmesh << std::endl;
-		}
-		else {
-			for(int unsigned i = 0; i < 2; ++i) {
-				all_points_firstmesh << all_points_vector_firstmesh[j](i) << ' ';
-			}
-			all_points_firstmesh << std::endl;
-		}
-	}
-
-	all_points_firstmesh.close();
-
 }
 
 template <int dim>
@@ -826,7 +701,6 @@ void PoissonProblem<dim>::set_active_fe_indices ()
          cell != triangulation_new.end(); ++cell) {
       if (Obj_NewMesh.vector_new_cell_struct[count_cell].cell_is_boundary) {
         cell->set_material_id (surface_domain_id);
-//        std::cout << "cell->material_id(): " << cell->material_id() << "\n";
       }
       else
         cell->set_material_id (not_surface_domain_id);
@@ -1107,7 +981,6 @@ void PoissonProblem<dim>::assemble_system_newMesh ()
 	std::vector< unsigned int > FULL_EXTENDED_global_dof_indices;
 
 	std::vector< Point<2> > new_face_vector;
-//	std::vector< Point<2> > levelset_face;
 	std::vector< Point<2> > j_face_vector;
 	std::vector< Point<2> > j_face_vector_usurface;
 	std::vector< Point<2> > all_points_vector;
@@ -1258,6 +1131,7 @@ void PoissonProblem<dim>::assemble_system_newMesh ()
 		neighbor_face_dof_indices_usurface.resize(dofs_per_face/2);
 		neighbor_face_dof_indices_ubulk.resize(dofs_per_face/2);
 
+
 		// Separate cell_global_dof_indices into vector of global dof indices
 		// exclusively for each one of the variables.
 		// Example:
@@ -1265,6 +1139,14 @@ void PoissonProblem<dim>::assemble_system_newMesh ()
 		// cell_global_dof_indices_ALL (size=8):   0 ,77,1 ,78,2 ,79,3 ,80
 		// cell_global_dof_indices (u) (size=4):   0 ,   1 ,   2    ,3
 		// cell_global_dof_indices_ubulk   (size=4):      77,  ,78   ,79   ,80
+
+		// Update: This could have been done much more elegantly following:
+		// https://groups.google.com/forum/#!searchin/dealii/remove$20cells/dealii/0y93BHXL10M/840shoGzMP8J
+		// If I understand you correctly, it is sufficient for you to get the support points of the dofs.
+		// For this you can use a quadrature formula that is initialized with
+		// fe.get_unit_support_points. Then use a FEValues object that updates the quadrature points
+		// and call get_quadrature_points on each cell. The output is a std::vector and the entries
+		// are the support points of the local dofs.
 		count_u = 0;
 		count_p = 0;
 		for (unsigned int i=0; i<cell_global_dof_indices_ALL.size(); ++i) {
@@ -1449,9 +1331,6 @@ void PoissonProblem<dim>::assemble_system_newMesh ()
 					inside_faces++; // Keep track of number of inside_faces.
 					X0 = support_points[k0];
 					X1 = support_points[k1];
-					//					std::cout << "Integrate inside face \n";
-					//					std::cout << "X0 = " << X0 << "\n";
-					//					std::cout << "X1 = " << X1 << "\n";
 					ObjNewCell_new.setCoordinates(integrate_face_check,X0,X1);
 					ObjNewCell_new.setVertices();
 					new_face_vector.push_back(X0);
@@ -1972,31 +1851,6 @@ void PoissonProblem<dim>::assemble_system_newMesh ()
 			new_face_vector.push_back(X0);
 			new_face_vector.push_back(X1);
 
-//			levelset_face.push_back(X0);
-//			levelset_face.push_back(X1);
-			/*	int count_index = 0;
-			std::map <int, Point<2> > levelset_map;
-
-			std::map<Point<2> >::iterator it;
-			it = std::find(levelset_vector.begin(), levelset_vector.end(),
-								point);
-
-			//Point was not found in levelset_map
-
-			if(it == levelset_map.end())
-			{
-				levelset_map[count_index] = point;
-				count_index++;
-			}
-			else {
-				auto pos = it - new_vertices_vector.begin();
-				index = pos;
-			}*/
-
-
-
-			create_levelset_vector(levelset_face,X0);
-			create_levelset_vector(levelset_face,X1);
 			create_levelset_vector_map(levelset_face_map,X0);
 			create_levelset_vector_map(levelset_face_map,X1);
 
@@ -2088,13 +1942,6 @@ void PoissonProblem<dim>::assemble_system_newMesh ()
 											corrector_p_i,
 											corrector_p_j,
 											b_B,b_S);
-							//						std::cout << "getTermCoupling: " <<
-							//								Obj_cut_cell_integration.getTermCoupling
-							//								(X0,X1,	face_normal_vector,	dof_index_i,
-							//										dof_index_j,
-							//										real_face_length,
-							//										corrector_u_i,
-							//										corrector_u_j,corrector_p_i,corrector_p_j) << "\n";
 						}
 					}
 				}
@@ -2223,7 +2070,6 @@ void PoissonProblem<dim>::assemble_system_newMesh ()
 
 	} // (end for cell)
 
-	std::cout << "End for cell \n";
 	FM_system_matrix.copy_from(system_matrix_new);
 	// Variational Formulation from Burman and Hansbo "A unfitted..." (Laplace Problem with Nitsche's)
 
@@ -2242,7 +2088,7 @@ void PoissonProblem<dim>::assemble_system_newMesh ()
 
 	// Create block 00 with stab. term as described in "Cut FEM... " Burman et al 2014.
 	FM_system_matrix_block00_w_j.copy_from(system_matrix_new.block(0,0));
-	FM_system_matrix_block00_w_j.add(/*cell_diameter*cell_diameter*cell_diameter**/gamma_1,j_matrix);
+	FM_system_matrix_block00_w_j.add(gamma_1,j_matrix);
 
 	// Create matrices (block 00, surface) with constraint and with / without stabilization.
 	// These matrices are augmented and have one more line and column.
@@ -2252,13 +2098,9 @@ void PoissonProblem<dim>::assemble_system_newMesh ()
 	for(unsigned int i = 0; i < n_dofs_surface; ++i) {
 		for(unsigned int j = 0; j < n_dofs_surface; ++j) {
 
-			FM_system_matrix_block00_no_j_yes_constraint(i,j)
-					= FM_system_matrix(i,j);
-
-			FM_system_matrix_block00_yes_j_yes_constraint(i,j) = FM_system_matrix(i,j)
-					+ /*cell_diameter*cell_diameter*cell_diameter**/gamma_1*j_matrix(i,j)
-
-			;
+			FM_system_matrix_block00_no_j_yes_constraint(i,j) = FM_system_matrix(i,j);
+			FM_system_matrix_block00_yes_j_yes_constraint(i,j)
+					= FM_system_matrix(i,j) + gamma_1*j_matrix(i,j);
 		}
 	}
 	// Add constraint vector to the last line
@@ -2267,7 +2109,6 @@ void PoissonProblem<dim>::assemble_system_newMesh ()
 	// These constrained matrices will only serve when solving the problem decoupled; to solve the
 	// full augmented matrix, I will input the constraint vector to the last column and vector of
 	// the matrix AGAIN
-
 
 	for(int unsigned j = 0; j < n_dofs_surface; ++j) {
 		unsigned int i = n_dofs_surface;
@@ -2397,9 +2238,7 @@ void PoissonProblem<dim>::assemble_system_newMesh ()
 	std::cout << "L1 Condition Number block 00 w/constraint, stabilization: " <<  condition_number << "\n";
 	}
 
-
 	ALLERRORS_usurface[cycle][7] = condition_number;
-
 	// Create system_rhs_block0
 	system_rhs_block0.reinit(system_rhs_new.block(0).size());
 	system_rhs_block0 = system_rhs_new.block(0);
@@ -2422,16 +2261,12 @@ void PoissonProblem<dim>::assemble_system_newMesh ()
 		system_rhs_block01_w_constraint(i+n_dofs_surface)= system_rhs_block1(i);
 	}
 	system_rhs_block01_w_constraint(dof_handler_new.n_dofs()) = 0;
-	// START OUTPUTING MATRICES/VECTORS.
-	// CHECK IF YOU WANT TO OUTPUT EVERYTHING.
+	// Output matrices and vectors for visualization purposes only.
+	// Output also vectors used to create plots in Gnuplot
 	if(1) {
-//
-//		// OUTPUT MATRICES/VECTORS to visualize in Matlab/Gedit
-//
-//		// Output the (virgin) stifness matrix / or inverted into a .txt file. I can use the matrix in
-//		// Matlab and do relevant operations (For example, find the l2 norm and l2 cond.
-//		// number, which is not straight forward in deal.ii)
-//
+
+
+		// Output block 0,0 without stabilization.
 //		{
 //			std::ofstream MATRIX;
 //			MATRIX.open("FM_system_matrix_block00_no_j.txt");
@@ -2457,6 +2292,9 @@ void PoissonProblem<dim>::assemble_system_newMesh ()
 //			MATRIX.close();
 //		}
 //
+		// Output the (virgin) stiffness matrix / or inverted into a .txt file. I can use the matrix in
+		// Matlab and do relevant operations (For example, find the l2 norm and l2 cond.
+		// number, which is not straight forward in deal.ii)
 		// Output the complete system matrix, without stabilization and constraints.
 		{
 			std::ofstream FM_SYSTEM_MATRIX;
@@ -2607,11 +2445,7 @@ void PoissonProblem<dim>::assemble_system_newMesh ()
 			CONSTRAINT_VECTOR.close();
 		}
 //
-//		// Output the j- matrices into .txt files. I can use the matrix in
-//		// Matlab and do relevant operations (For example, find the l2 norm and l2 cond.
-//		// number, which is not straight forward in deal.ii)
-//
-//		// Visualize the stabilization matrix for the p variable (surface)
+//		// Visualize the stabilization matrix for the ubulk variable
 //		{
 //			std::ofstream J_MATRIX_P;
 //			J_MATRIX_P.open("j_matrix_p.txt");
@@ -2623,21 +2457,23 @@ void PoissonProblem<dim>::assemble_system_newMesh ()
 //			}
 //			J_MATRIX_P.close();
 //		}
-		// Visualize the stabilization matrix for the u variable (bulk)
-		{
-			std::ofstream J_MATRIX_U;
-			J_MATRIX_U.open("j_matrix_u.txt");
-			for(int unsigned i = 0; i < j_matrix.size(0); ++i) {
-				for(int unsigned j = 0; j < j_matrix.size(1); ++j) {
-					J_MATRIX_U << j_matrix(i,j) << ',';
-				}
-				J_MATRIX_U << std::endl;
-			}
-			J_MATRIX_U.close();
-		}
+		// Visualize the stabilization matrix for the usurface variable
+//		{
+//			std::ofstream J_MATRIX_U;
+//			J_MATRIX_U.open("j_matrix_u.txt");
+//			for(int unsigned i = 0; i < j_matrix.size(0); ++i) {
+//				for(int unsigned j = 0; j < j_matrix.size(1); ++j) {
+//					J_MATRIX_U << j_matrix(i,j) << ',';
+//				}
+//				J_MATRIX_U << std::endl;
+//			}
+//			J_MATRIX_U.close();
+//		}
 //
+		// Start Output of vectors for visualization of relevant mesh in Gnuplot
 		{
-			// Save a .txt file with the coordinates of the faces relevant to the stabilization term (j_faces)
+			// Save a .txt file with the coordinates of the faces relevant to the
+			// stabilization term (j_faces)
 			std::ofstream j_faces;
 			j_faces.open("j_faces.txt");
 			for(int unsigned j = 0; j <  j_face_vector.size(); ++j) {
@@ -2701,7 +2537,6 @@ void PoissonProblem<dim>::assemble_system_newMesh ()
 //		/////
 //
 		// Create a .txt file with all the points of each (new) cut cell face
-		// Open this file in Excel/ GNUPLOT! and plot the points to check the new cut cells.
 		{
 			std::ofstream new_cut_face;
 			new_cut_face.open("new_cut_face.txt");
@@ -2718,22 +2553,6 @@ void PoissonProblem<dim>::assemble_system_newMesh ()
 			}
 			new_cut_face.close();
 		}
-		{
-			std::ofstream LEVELSET_FACE;
-			LEVELSET_FACE.open("levelset_face.txt");
-			for(int unsigned j = 0; j < levelset_face.size(); ++j) {
-				if (levelset_face[j] == VOID_POINT) {
-					LEVELSET_FACE << std::endl;
-				}
-				else {
-					for(int unsigned i = 0; i < 2; ++i) {
-						LEVELSET_FACE << levelset_face[j](i) << ' ';
-					}
-					LEVELSET_FACE << std::endl;
-				}
-			}
-			LEVELSET_FACE.close();
-		}
 	}
 
 
@@ -2743,10 +2562,10 @@ template <int dim>
 void PoissonProblem<dim>::solve ()
 {
 
-//	The Lagrangian multiplier may be though of as a force acting to enforce
+//	The Lagrangian multiplier may be thought of as a force acting to enforce
 //	the constraints. Because the zero mean value on uh is a constraint, which do not alter
 //	the solution to the underlying Neumann problem, the force should vanish or, at
-//	least, be very small. (The FEM, Larson, Bengzon)
+//	least, be very small. (The FEM, Book, Larson, Bengzon)
 
 
 	SolverControl           solver_control (1000, 1e-12);
@@ -2775,9 +2594,7 @@ void PoissonProblem<dim>::solve ()
 	}
 
 	//	 SOLVE UBULK NO J NO CONSTRAINT
-	// Att., UBULK
 	if (0) {
-		//		std::cout << "Solving USURFACE...  NO J NO CONSTRAINT\n";
 		std::cout << "Solving UBULK...  NO J NO CONSTRAINT\n";
 		// Here j_matrix was NOT summed into system_matrix.
 		solver.solve (system_matrix_new.block(1,1), solution_new.block(1), system_rhs_new.block(1),
@@ -2799,13 +2616,10 @@ void PoissonProblem<dim>::solve ()
 		// END SOLVE NO J NO CONSTRAINT
 	}
 
-
 	// SOLVE UBULK YES J (naturally without CONSTRAINT)
-	// Att., UBULK
 	if (0) {
 
 		// Here j_matrix was summed into system_matrix.
-		//		std::cout << "Solving USURFACE...  yes_j_no_constraint \n";
 		std::cout << "Solving UBULK...  yes_j  \n";
 		solver.solve (FM_system_matrix_block11_yes_j,
 				solution_new.block(1), system_rhs_new.block(1), PreconditionIdentity());
@@ -2825,10 +2639,8 @@ void PoissonProblem<dim>::solve ()
 		}
 	}
 
-	// Solve USURFACE YES J NO Constraint
-	// Now block 00 is USURFACe!
-	// Remember that the coupling term is added
-	// in the formulation;
+	// Solve USURFACE YES J NO Constraint (block 0,0)
+	// Remember that the coupling term is added in the formulation;
 	// If you want to really only solve the ubulk variable you have to eliminate the coupling term,
 	// because it has components that are (u_b,v_b).
 	if (0)
@@ -2841,12 +2653,6 @@ void PoissonProblem<dim>::solve ()
 				FM_system_matrix_block00_w_j,
 				solution_new.block(0), system_rhs_new.block(0),
 				PreconditionIdentity());
-		/*solver.solve (FM_system_matrix_block00, solution_block0
-				solution_new.block(0) , system_rhs_block0,
-				PreconditionIdentity());*/
-
-		//	  constraints.distribute (solution_new); // ABSOLUTELY NEEDED.
-
 		std::cout << "   " << solver_control.last_step()
 	  	            								<< " CG iterations needed to obtain convergence."
 	  	            								<< std::endl;
@@ -2927,23 +2733,6 @@ void PoissonProblem<dim>::solve ()
 		difference_solution_ubulk[i] 	= exact_solution_ubulk[i] - solution_new.block(1)[i];
 		difference_solution.block(1)[i] = exact_solution_ubulk[i] - solution_new.block(1)[i];
 	}
-
-
-// Solve with constraints applied with deal.ii method.
-//	  constraints.distribute (solution_new); // ABSOLUTELY NEEDED.
-/*
-	SolverControl           solver_control (1000, 1e-12);
-	SolverCG<>              solver (solver_control);
-
-
-	solver.solve (system_matrix_new FM_system_matrix , solution_new, system_rhs_new,
-			PreconditionIdentity());
-
-	for (unsigned int i=0; i<solution_new.size(); ++i)
-	{
-		difference_solution[i] = exact_solution[i] - solution_new[i];
-	}
-	std::cout << "SOLVE \n";*/
 }
 
 template <int dim>
@@ -3068,14 +2857,12 @@ void PoissonProblem<dim>::process_solution_ubulk ()
 	const double L2_error = difference_per_cell.l2_norm();
 	ALLERRORS_ubulk[cycle][4] = L2_error;
 	VectorTools::integrate_difference (dof_handler_new,
-			solution_new, /*solution_new.block(1),*/
-			ExactSolution<dim>(), /*ExactSolutionUbulk<dim>(),*/
+			solution_new,
+			ExactSolution<dim>(),
 			difference_per_cell,
 			q_collection,
-//			VectorTools::H1_seminorm
 			VectorTools::H1_norm
 			,&weight_values
-//			,&ubulk_mask
 	);
 	const double H1_error = difference_per_cell.l2_norm();
 	//    H1_norm :The square of this norm is the square of the L2_norm plus the square of the H1_seminorm.
@@ -3094,7 +2881,6 @@ void PoissonProblem<dim>::process_solution_ubulk ()
 			q_iterated_collection,
 			VectorTools::Linfty_norm
 			,&weight_values
-//			,&ubulk_mask
 	);
 	const double Linfty_error = difference_per_cell.linfty_norm();
 	ALLERRORS_ubulk[cycle][6] = Linfty_error;
@@ -3118,12 +2904,12 @@ void PoissonProblem<dim>::interpolate_solution_usurface (){
     // (0 1),(1 2),(2 3)... (n-2 0). The last vertex needs to match the first.
     // The numbering itself doesn't need to have a logical structure, but the coincident nodes of
     // different elements must have the same number
-	std::vector<CellData<1> > cells_data (levelset_face.size(), CellData<1>());
-	for (unsigned int i=0; i< levelset_face.size(); ++i)
+	std::vector<CellData<1> > cells_data (levelset_face_map.size(), CellData<1>());
+	for (unsigned int i=0; i< levelset_face_map.size(); ++i)
 		for (unsigned int j=0; j< 2; ++j)
 			cells_data[i].vertices[j] = i+j;
 
-	cells_data[levelset_face.size()-1].vertices[1] = 0;
+	cells_data[levelset_face_map.size()-1].vertices[1] = 0;
 
 	// Create triangulation with codimension 1 and space dimension 2.
 	Triangulation<1,2> levelset_triangulation;
@@ -3231,10 +3017,6 @@ void PoissonProblem<dim>::interpolate_solution_usurface (){
 
 	ALLERRORS_usurface[cycle][4] = L2_norm;
 	ALLERRORS_usurface[cycle][5] = H1_error;
-
-
-
-
 }
 
 template <int dim>
@@ -3251,22 +3033,17 @@ void PoissonProblem<dim>::run ()
 
 	while (cycle < n_cycles)
 	{
-
 		make_grid (); // This will make the first grid (cycle =0) and then just refine. Updated to cycle
 		initialize_levelset();
 		output_results_levelset();
 		get_new_triangulation ();
-
-//		dof_handler_new.initialize (triangulation_new,fe); // Don't need anymore, is HP
 
 		setup_system_new();
 		initialize_levelset_new();
 		assemble_system_newMesh();
 		solve ();
 		output_results ();
-		process_solution_ubulk(); // skip for coupled problems
-//		process_solution_usurface(); // substituted by interpolate_solution_usurface
-//		plot_error(); // this is equal to difference_solution.vtk
+		process_solution_ubulk();
 		interpolate_solution_usurface();
 		cycle++;
 	}
@@ -3310,8 +3087,7 @@ int main ()
 	using namespace dealii;
 	using namespace cut_cell_method;
 	const unsigned int dim = 2;
-	int _n_cycles = 5; //
-	// For uncoupled problems, uncomment the lines below.
+	int _n_cycles = 5;
 	system("exec rm ErrorEvaluation_usurface_appending.txt");
 	system("exec rm ErrorEvaluation_ubulk_appending.txt");
 	for(int i = 0; i < _n_cycles; ++i) {
