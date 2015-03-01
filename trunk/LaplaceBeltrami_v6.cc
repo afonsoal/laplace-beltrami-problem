@@ -1899,52 +1899,7 @@ void PoissonProblem<dim>::assemble_system_newMesh ()
 										);
 					}
 				} // End For dof_j
-				// Integrate COUPLING term
-				int corrector_u_i, corrector_u_j;
-				int corrector_p_i, corrector_p_j;
-				if(0){
-					for (unsigned int dof_i=0; dof_i<dofs_per_cell; ++dof_i) {
-						for (unsigned int dof_j=0; dof_j<dofs_per_cell; ++dof_j) {
-
-							dof_index_i = dof_handler_new.get_fe()[active_fe_index].
-									system_to_component_index(dof_i).second;
-							dof_index_j = dof_handler_new.get_fe()[active_fe_index].
-									system_to_component_index(dof_j).second;
-
-
-							if (dof_handler_new.get_fe()[active_fe_index].
-									system_to_component_index(dof_i).first == 0)
-								corrector_u_i = 1;
-							else corrector_u_i = 0;
-
-							if (dof_handler_new.get_fe()[active_fe_index].
-									system_to_component_index(dof_j).first == 0)
-								corrector_u_j = 1;
-							else corrector_u_j = 0;
-
-							if (dof_handler_new.get_fe()[active_fe_index].
-									system_to_component_index(dof_i).first == 1)
-								corrector_p_i = 1;
-							else corrector_p_i = 0;
-
-							if (dof_handler_new.get_fe()[active_fe_index].
-									system_to_component_index(dof_j).first == 1)
-								corrector_p_j = 1;
-							else corrector_p_j = 0;
-
-							cell_matrix(dof_i,dof_j) +=
-									Obj_cut_cell_integration.getTermCoupling
-									(X0,X1,	face_normal_vector,	dof_index_i,
-											dof_index_j,
-											real_face_length,
-											corrector_u_i,
-											corrector_u_j,
-											corrector_p_i,
-											corrector_p_j,
-											b_B,b_S);
-						}
-					}
-				}
+				// Integrate COUPLING term // moved from here
 				// Integrate RHS bulk term
 				if (dof_handler_new.get_fe()[active_fe_index].
 						system_to_component_index(dof_i).first == 1) {
@@ -1986,6 +1941,54 @@ void PoissonProblem<dim>::assemble_system_newMesh ()
 									);
 				}
 			}  // End For dof_i
+
+			// Integrate COUPLING term // moved to here
+			int corrector_u_i, corrector_u_j;
+			int corrector_p_i, corrector_p_j;
+			if(0){
+				for (unsigned int dof_i=0; dof_i<dofs_per_cell; ++dof_i) {
+					for (unsigned int dof_j=0; dof_j<dofs_per_cell; ++dof_j) {
+
+						dof_index_i = dof_handler_new.get_fe()[active_fe_index].
+								system_to_component_index(dof_i).second;
+						dof_index_j = dof_handler_new.get_fe()[active_fe_index].
+								system_to_component_index(dof_j).second;
+
+
+						if (dof_handler_new.get_fe()[active_fe_index].
+								system_to_component_index(dof_i).first == 0)
+							corrector_u_i = 1;
+						else corrector_u_i = 0;
+
+						if (dof_handler_new.get_fe()[active_fe_index].
+								system_to_component_index(dof_j).first == 0)
+							corrector_u_j = 1;
+						else corrector_u_j = 0;
+
+						if (dof_handler_new.get_fe()[active_fe_index].
+								system_to_component_index(dof_i).first == 1)
+							corrector_p_i = 1;
+						else corrector_p_i = 0;
+
+						if (dof_handler_new.get_fe()[active_fe_index].
+								system_to_component_index(dof_j).first == 1)
+							corrector_p_j = 1;
+						else corrector_p_j = 0;
+
+						cell_matrix(dof_i,dof_j) +=
+								Obj_cut_cell_integration.getTermCoupling
+								(X0,X1,	face_normal_vector,	dof_index_i,
+										dof_index_j,
+										real_face_length,
+										corrector_u_i,
+										corrector_u_j,
+										corrector_p_i,
+										corrector_p_j,
+										b_B,b_S);
+					}
+				}
+			}
+
 			// Abort these terms for the evaluation of coupled system (these terms do not appear
 			// on "Cut FEM... Burman et al 2014")
 			// TERM C
